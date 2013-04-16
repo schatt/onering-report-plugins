@@ -47,8 +47,8 @@ report do
 #
   stat :memory, stats_mem
   stat :cpu, ({
-    'count'    => Facter.value('processorcount'),
-    'physical' => Facter.value('physicalprocessorcount'),
+    'count'    => Facter.value('processorcount').to_i,
+    'physical' => Facter.value('physicalprocessorcount').to_i,
     'speed'    => stats_cpu[:processors].collect{|i| i[:speed] }.compact.uniq.sort{|a,b| a.to_f <=> b.to_f }.last.to_f
   } rescue nil)
 end
