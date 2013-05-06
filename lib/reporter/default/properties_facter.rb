@@ -9,7 +9,7 @@ report do
   def cleanup_dirty_values(k, v)
     return case k
     when 'mbserial' then v.to_s.gsub(/(^\.+|\.+$)/,'').gsub('.','-')
-    else (v.strip.chomp rescue nil)
+    else (v.strip.chomp rescue v)
     end
   end
 
