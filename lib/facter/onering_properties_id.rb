@@ -1,6 +1,12 @@
 Facter.add('signature') do
   setcode do
-    if Facter.value('macaddress')
+    if File.size?("/etc/onering/signature")
+      parts = File.read("/etc/onering/signature").split("\n").
+                reject{|i| i =~ /^\s*#/ }.
+                reject{|i| i.strip.chomp.empty? }.
+                collect{|i| i.gsub(/\H/,'') }
+
+    elsif Facter.value('macaddress')
       if Facter.value('is_virtual')
         if File.exists?('/sys/hypervisor/uuid')
           parts = [
@@ -14,9 +20,16 @@ Facter.add('signature') do
           Facter.value('macaddress').strip.delete(':')
         ]
       end
+
+    else
+      if Facter.value('ipaddress')
+        parts = [
+          Facter.value('ipaddress').split(',').first.strip.chomp.delete('.')
+        ].compact
+      end
     end
 
-    (parts ? parts.collect{|i| i.upcase }.join('-') : nil)
+    (parts && !parts.empty? ? parts.collect{|i| i.upcase }.join('-') : nil)
   end
 end
 
