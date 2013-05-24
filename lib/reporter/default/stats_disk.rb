@@ -88,8 +88,8 @@ report do
     unless vg[line[1]].nil?
       vg[line[1]][:disks] << {
         :name    => line[0],
-        :uuid    => line[11].to_i,
-        :size    => (line[2].to_i * 1024),
+        :uuid    => line[11],
+        :size    => (line[8].to_i * (line[7].to_i * 1024)),  # See Note 1 below
         :extents => {
           :size      => (line[7].to_i * 1024),
           :total     => line[8].to_i,
@@ -97,6 +97,13 @@ report do
           :free      => line[9].to_i
         }
       }
+
+    # the output of certain versions of pvdisplay -c reports a blatantly incorrect
+    # physical volume total size.  the workaround is to calculate the actual total size
+    # via (total extents * extent size)
+    #
+    # this may or may not be GPT related
+    #
     end
   end
 
