@@ -109,7 +109,7 @@ report do
 
 
   stat :disk, {
-    :mounts => (Hash[mounts.select{|k,v| k =~ /^\/dev\/((h|s|xv|v)d|mapper)/ }].values rescue nil),
+    :mounts => (Hash[mounts.select{|k,v| k =~ /^\/dev\/((h|s|xv|v)d|mapper|vgc)/ }].values rescue nil),
     :lvm    => {
       :groups => vg.values
     }
