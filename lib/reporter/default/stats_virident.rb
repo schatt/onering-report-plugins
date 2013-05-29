@@ -4,5 +4,5 @@
 
 report do
   virident = Facter.value('virident')
-  stat :virident, virident unless virident.nil?
+  stat :@virident, virident unless virident.nil?
 end

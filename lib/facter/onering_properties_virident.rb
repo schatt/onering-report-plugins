@@ -66,7 +66,7 @@ if Facter::Util::Resolution.which('vgc-monitor')
         end
       else
         if detail.first.to_s =~ /^\/dev\/(vgc[a-z]+[0-9]+)\s+([0-9]+) [KMGTPEZY]?B\s+([a-z]+)$/
-          card[:partitions] << part unless part_name.nil?
+          card[:partitions] << part[part_name] unless part_name.nil?
 
           part_name = $1
           part[part_name] ||= {}
@@ -78,7 +78,7 @@ if Facter::Util::Resolution.which('vgc-monitor')
 
     end
 
-    card[:partitions] << part unless part_name.nil?
+    card[:partitions] << part[part_name] unless part_name.nil?
     virident_cards << card
   end
 
