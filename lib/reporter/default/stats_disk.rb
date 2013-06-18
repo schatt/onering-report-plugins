@@ -9,7 +9,7 @@ report do
   mounts = {}
   current_dev = nil
 
-  File.open("/etc/mtab").each do |line|
+  File.read("/etc/mtab").lines.each do |line|
     dev,mount,fstype,flags,dump,pass = line.split(/\s+/)
 
     mounts[dev] = {
@@ -21,7 +21,7 @@ report do
   end
 
 # logical space utilization
-  IO.popen("df").lines.each do |line|
+  Facter::Util::Resolution.exec("df 2> /dev/null").to_s.lines.each do |line|
     next if line =~ /^Filesystem/
     parts = line.split(/\s+/)
 
@@ -48,7 +48,7 @@ report do
   vg = {}
 
 # volume groups
-  IO.popen("vgdisplay -c").lines.each do |line|
+  Facter::Util::Resolution.exec("vgdisplay -c 2> /dev/null").to_s.lines.each do |line|
     line = line.strip.chomp.split(':')
 
     vg[line[0]] = {
@@ -67,7 +67,7 @@ report do
   end
 
 # logical volumes
-  IO.popen("lvdisplay -c").lines.each do |line|
+  Facter::Util::Resolution.exec("lvdisplay -c 2> /dev/null").to_s.lines.each do |line|
     line = line.strip.chomp.split(':')
 
     unless vg[line[1]].nil?
@@ -82,7 +82,7 @@ report do
 
 
 # physical volumes
-  IO.popen("pvdisplay -c").lines.each do |line|
+  Facter::Util::Resolution.exec("pvdisplay -c 2> /dev/null").to_s.lines.each do |line|
     line = line.strip.chomp.split(':')
 
     unless vg[line[1]].nil?
