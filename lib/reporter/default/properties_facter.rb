@@ -15,25 +15,32 @@ report do
 
   if defined?(Facter)
   # get a list of Facter attributes to list
-    if File.exists?("/etc/onering/facter.list")
-      IO.readlines("/etc/onering/facter.list").each do |line|
-      # strip whitespace/kill newline
-        line.strip!
-        line.chomp!
-        next if line.empty?
-        line = line.downcase
+    local_list = File.join(File.dirname(File.dirname(File.dirname(__FILE__))),'etc','facter.list')
 
-        unless line =~ /^#/
-          begin
-            line = line.split(':')
-            key = (line.length == 1 ? line.first : line.last)
-            val = cleanup_dirty_values(key, Facter.value(line.first))
+    facts = [
+      local_list,
+      "/etc/onering/facter.list"
+    ].collect{|file|
+      IO.readlines(file) if File.exists?(file)
+    }.flatten.compact.sort.uniq
 
-            property key.to_sym, val
-          rescue Exception
-            STDERR.puts e.message
-            next
-          end
+    facts.each do |line|
+    # strip whitespace/kill newline
+      line.strip!
+      line.chomp!
+      next if line.empty?
+      line = line.downcase
+
+      unless line =~ /^#/
+        begin
+          line = line.split(':')
+          key = (line.length == 1 ? line.first : line.last)
+          val = cleanup_dirty_values(key, Facter.value(line.first))
+
+          property key.to_sym, val
+        rescue Exception
+          STDERR.puts e.message
+          next
         end
       end
     end

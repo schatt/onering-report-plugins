@@ -1,0 +1,16 @@
+serialnumber:serial
+manufacturer:make
+productname:model
+boardmanufacturer:mbmake
+boardproductname:mbmodel
+boardserialnumber:mbserial
+fqdn
+ipaddress:ip
+default_macaddress:mac
+default_gateway:gateway
+kernelrelease:kernel
+architecture:arch
+operatingsystem:distro
+operatingsystemrelease:version
+signature
+boottime:booted_at
