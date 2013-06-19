@@ -1,9 +1,11 @@
 Facter.add('uuid') do
   setcode do
-    if Facter.value('uuid')
+    if not Facter.value('uuid').nil?
       Facter.value('uuid')
     elsif Facter::Util::Resolution.which('dmidecode')
       Facter::Util::Resolution.exec('dmidecode -s system-uuid').strip.chomp
+    elsif File.exists?('/sys/hypervisor/uuid')
+      File.read('/sys/hypervisor/uuid').lines.first.strip.chomp
     else
       nil
     end
@@ -12,36 +14,33 @@ end
 
 Facter.add('signature') do
   setcode do
-    if File.size?("/etc/onering/signature")
-      parts = File.read("/etc/onering/signature").split("\n").
-                reject{|i| i =~ /^\s*#/ }.
-                reject{|i| i.strip.chomp.empty? }.
-                collect{|i| i.gsub(/\H/,'') }
+    parts = []
 
-    elsif Facter.value('macaddress')
-      if Facter.value('is_virtual')
-        if File.exists?('/sys/hypervisor/uuid')
-          parts = [
-            File.read('/sys/hypervisor/uuid').strip.chomp.delete('-'),
-            Facter.value('macaddress').strip.delete(':')
-          ]
-        end
-      elsif Facter::Util::Resolution.which('dmidecode')
-        parts = [
-          Facter::Util::Resolution.exec('dmidecode -s system-uuid').strip.chomp.delete('-'),
-          Facter.value('macaddress').strip.delete(':')
-        ]
-      end
+    if Facter.value('uuid')
+      parts << Facter.value('uuid').gsub(/[\W\_]+/,'').upcase
+    end
 
-    else
+    if Facter.value('macaddress')
+      parts << Facter.value('macaddress').gsub(/[\W\_]+/,'').upcase
+    end
+
+  # still empty, now we really have to grasp at straws
+    if parts.empty?
       if Facter.value('ipaddress')
-        parts = [
-          Facter.value('ipaddress').split(',').first.strip.chomp.delete('.')
-        ].compact
+        parts << Facter.value('ipaddress').split(',').first.strip.chomp.delete('.')
       end
     end
 
-    (parts && !parts.empty? ? parts.collect{|i| i.upcase }.join('-') : nil)
+
+  # final pruning
+    parts = parts.reject{|i| i.nil? || i.empty? }
+
+  # still empty?
+    if parts.empty?
+      nil
+    else
+      parts.join('-')
+    end
   end
 end
 
