@@ -1,3 +1,15 @@
+Facter.add('uuid') do
+  setcode do
+    if Facter.value('uuid')
+      Facter.value('uuid')
+    elsif Facter::Util::Resolution.which('dmidecode')
+      Facter::Util::Resolution.exec('dmidecode -s system-uuid').strip.chomp
+    else
+      nil
+    end
+  end
+end
+
 Facter.add('signature') do
   setcode do
     if File.size?("/etc/onering/signature")
