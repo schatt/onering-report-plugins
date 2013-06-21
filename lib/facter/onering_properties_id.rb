@@ -51,8 +51,10 @@ Facter.add('hardwareid') do
       File.read('/etc/hardware.id').strip.chomp rescue nil
 
   # 2. value of kernel boot argument 'hardwareid' is checked
-    elsif Facter.value('kernelarguments').is_a?(Hash) and not Facter.value('kernelarguments')['hardwareid'].nil?
-      Facter.value('kernelarguments')['hardwareid']
+    elsif Facter.value('kernelarguments').is_a?(Hash) and
+    not Facter.value('kernelarguments')['hardwareid'].nil? and
+    not Facter.value('kernelarguments')['hardwareid'].to_s.strip.empty?
+      Facter.value('kernelarguments')['hardwareid'].to_s.strip
 
   # 3. calculate a new hardwareid from the system signature
     elsif Facter.value('signature')
