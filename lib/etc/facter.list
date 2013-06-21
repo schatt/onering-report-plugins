@@ -9,6 +9,7 @@ ipaddress:ip
 default_macaddress:mac
 default_gateway:gateway
 kernelrelease:kernel
+kernelarguments
 architecture:arch
 operatingsystem:distro
 operatingsystemrelease:version

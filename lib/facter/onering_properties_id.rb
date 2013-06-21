@@ -46,11 +46,22 @@ end
 
 Facter.add('hardwareid') do
   setcode do
+  # 1. contents of /etc/hardware.id takes absolute precedence
     if File.size?('/etc/hardware.id')
       File.read('/etc/hardware.id').strip.chomp rescue nil
+
+  # 2. value of kernel boot argument 'hardwareid' is checked
+    elsif Facter.value('kernelarguments').is_a?(Hash) and not Facter.value('kernelarguments')['hardwareid'].nil?
+      Facter.value('kernelarguments')['hardwareid']
+
+  # 3. calculate a new hardwareid from the system signature
     elsif Facter.value('signature')
       require 'digest'
       Digest::SHA256.new.update(Facter.value('signature')).hexdigest[0..5]
+
+  # 4. i got nothing...
+    else
+      nil
     end
   end
 end
