@@ -108,10 +108,14 @@ report do
   end
 
 
-  stat :disk, {
-    :mounts => (Hash[mounts.select{|k,v| k =~ /^\/dev\/((h|s|xv|v)d|mapper|vgc)/ }].values rescue nil),
-    :lvm    => {
-      :groups => vg.values
-    }
-  }
+  d = {}
+
+  d[:mounts] = (Hash[mounts.select{|k,v| k =~ /^\/dev\/((h|s|xv|v)d|mapper|vgc)/ }].values rescue nil)
+  d[:lvm] = {
+    :groups => vg.values
+  } unless vg.values.empty?
+
+  d[:smart] = Facter.value('smart')
+
+  stat :disk, d.compact
 end
