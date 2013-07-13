@@ -4,6 +4,7 @@ productname:model
 boardmanufacturer:mbmake
 boardproductname:mbmodel
 boardserialnumber:mbserial
+hostname
 fqdn
 ipaddress:ip
 default_macaddress:mac
