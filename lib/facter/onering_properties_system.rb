@@ -9,7 +9,7 @@ Facter.add('kernelarguments') do
     if File.readable?('/proc/cmdline')
       Hash[File.read('/proc/cmdline').split(' ').collect{|i|
         key, value = i.split('=', 2)
-        [key, value]
+        [key.gsub('.','_'), value]
       }]
     else
       nil
