@@ -9,6 +9,10 @@ report do
   mounts = {}
   current_dev = nil
 
+  uuids = Hash[Dir["/dev/disk/by-uuid/*"].collect{|i|
+    [File.expand_path(File.readlink(i), File.dirname(i)), File.basename(i)]
+  }]
+
   File.read("/etc/mtab").lines.each do |line|
     dev,mount,fstype,flags,dump,pass = line.split(/\s+/)
 
@@ -16,8 +20,9 @@ report do
       :mount      => mount,
       :device     => dev,
       :filesystem => fstype,
-      :flags      => flags.split(/\s*,\s*/)
-    }
+      :flags      => flags.split(/\s*,\s*/),
+      :uuid       => uuids[dev]
+    }.compact
   end
 
 # logical space utilization
