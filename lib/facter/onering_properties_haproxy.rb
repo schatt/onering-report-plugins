@@ -7,6 +7,7 @@ haproxy = nil
 
 Dir["/etc/haproxy/*.cfg"].each do |cfg|
   haproxy ||= []
+  pools = {}
   cfg_data = (File.read(cfg).lines rescue [])
 
   description = (cfg_data.select{|i| i =~ /^\s* description / }.first.strip.split(' ',2).last.gsub('"','') rescue nil)
@@ -19,7 +20,7 @@ Dir["/etc/haproxy/*.cfg"].each do |cfg|
     instance = {
       :name        => File.basename(cfg, '.cfg'),
       :description => description,
-      :pools       => {}
+      :pools       => []
     }
 
     stats.read.lines.each do |line|
@@ -29,9 +30,12 @@ Dir["/etc/haproxy/*.cfg"].each do |cfg|
       line = line.split(',')
 
       begin
-        instance[:pools][line[0]] ||= []
-        instance[:pools][line[0]] << ({
-          :pool => line[0],
+        pools[line[0]] ||= {
+          :name     => line[0],
+          :services => []
+        }
+
+        pools[line[0]][:services] << ({
           :name => line[1],
           :queue => {
             :current => line[2].to_i,
@@ -131,6 +135,7 @@ Dir["/etc/haproxy/*.cfg"].each do |cfg|
       end
     end
 
+    instance[:pools] = pools.values()
     haproxy << instance
   end
 end
