@@ -1,5 +1,6 @@
 report do
   interfaces = {}
+  ips = []
 
   Facter.value('network_interfaces').each do |iface|
     iface = iface.to_sym
@@ -12,6 +13,8 @@ report do
     interfaces[iface][:name] = iface
     interfaces[iface][:mac] = mac if mac
     interfaces[iface][:mtu] = mtu if mtu
+
+    ips << Facter.value("ipaddress_#{iface}")
 
     addresses = [{
       :ip       => Facter.value("ipaddress_#{iface}"),
@@ -50,6 +53,7 @@ report do
   end
 
   property :network, {
+    :@ip         => ips,
     :@interfaces => interfaces.values
   }
 end
