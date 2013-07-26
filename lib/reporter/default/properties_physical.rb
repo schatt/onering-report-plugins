@@ -6,7 +6,7 @@ report do
   property :site,            Facter.value('site')
   property :environment,     Facter.value('environment')
   property :slot,            Facter.value('slot')
-  property :virtual,         Facter.value('is_virtual')
+  property :virtual,         (Facter.value('is_virtual').to_s == 'true' ? true : false)
   property :ipmi_ip,         Facter.value('ipmi_ip')
   property :ipmi_netmask,    Facter.value('ipmi_netmask')
   property :ipmi_gateway,    Facter.value('ipmi_gateway')
