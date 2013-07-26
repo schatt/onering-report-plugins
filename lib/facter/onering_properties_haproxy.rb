@@ -1,11 +1,14 @@
 # Onering Facts - HAProxy Stats
 #   provides collection of statistics from HAProxy
 #
+require 'set'
 require 'socket'
 
 haproxy = nil
+sockets_seen = Set.new()
 
-Dir["/etc/haproxy/*.cfg"].each do |cfg|
+# find all haproxy configs, ensuring haproxy.cfg is always front of the line
+Dir["/etc/haproxy/*.cfg"].sort{|a,b| (b == 'haproxy.cfg' ? 1 : a<=>b) }.each do |cfg|
   haproxy ||= []
   pools = {}
   cfg_data = (File.read(cfg).lines rescue [])
@@ -13,12 +16,16 @@ Dir["/etc/haproxy/*.cfg"].each do |cfg|
   description = (cfg_data.select{|i| i =~ /^\s* description / }.first.strip.split(' ',2).last.gsub('"','') rescue nil)
   socket = (cfg_data.select{|i| i =~ /^\s* stats socket / }.first.strip.split(' ')[2] rescue nil)
 
-  if not socket.nil? and File.exists?(socket)
+# stats socket must be present in the config, a real file, and not have been seen before
+  if not socket.nil? and File.exists?(socket) and not sockets_seen.include?(socket)
+    sockets_seen << socket
     stats = UNIXSocket.new(socket)
     stats.puts("show stat")
 
     instance = {
       :name        => File.basename(cfg, '.cfg'),
+      :socket      => socket,
+      :path        => cfg,
       :description => description,
       :pools       => []
     }
