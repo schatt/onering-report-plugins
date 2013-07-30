@@ -115,7 +115,7 @@ report do
 
   d = {}
 
-  d[:mounts] = (Hash[mounts.select{|k,v| k =~ /^\/dev\/((h|s|xv|v)d|mapper|vgc)/ }].values rescue nil)
+  d[:@mounts] = (Hash[mounts.select{|k,v| k =~ /^\/dev\/((h|s|xv|v)d|mapper|vgc)/ }].values rescue nil)
   d[:lvm] = {
     :groups => vg.values
   } unless vg.values.empty?
