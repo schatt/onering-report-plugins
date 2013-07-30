@@ -117,10 +117,10 @@ report do
 
   d[:@mounts] = (Hash[mounts.select{|k,v| k =~ /^\/dev\/((h|s|xv|v)d|mapper|vgc)/ }].values rescue nil)
   d[:lvm] = {
-    :groups => vg.values
+    :@groups => vg.values
   } unless vg.values.empty?
 
-  d[:smart] = Facter.value('smart')
+  d[:@smart] = Facter.value('smart')
 
   stat :disk, d.compact
 end
