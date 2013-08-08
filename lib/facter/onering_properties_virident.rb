@@ -1,7 +1,7 @@
 if Facter::Util::Resolution.which('vgc-monitor')
   virident_cards = []
 
-  Facter::Util::Resolution.exec("vgc-monitor | grep '^/dev'").split("\n").each do |card|
+  Facter::Util::Resolution.exec("vgc-monitor | grep '^/dev'").to_s.split("\n").each do |card|
     name, partitions, model, status = card.strip.chomp.split(/\s+/)
     card = {
       :name       => name,
@@ -13,7 +13,7 @@ if Facter::Util::Resolution.which('vgc-monitor')
 
     part = {}
     part_name = nil
-    details = Facter::Util::Resolution.exec("vgc-monitor -d #{name}").split(/\n/).collect{|i| i.strip.split(/\s*:\s*/,2) }
+    details = Facter::Util::Resolution.exec("vgc-monitor -d #{name}").to_s.split(/\n/).collect{|i| i.strip.split(/\s*:\s*/,2) }
 
     details.each_index do |i|
       begin
