@@ -1,8 +1,8 @@
 require 'resolv'
 
-protocols = %w{tcp}
+protocols = %w{tcp tcp6 udp udp6}
 
-flags = "--numeric-hosts --numeric-ports --programs --tcp -ee"
+flags = "--numeric-hosts --numeric-ports --programs --tcp --udp -ee"
 
 case Facter.value('osfamily').to_s.downcase
 when 'debian' then flags += " -W"
@@ -28,6 +28,7 @@ end
 
 listening.lines.to_a[2..-1].each do |line|
   protocol, recvq, sendq, local, foreign, state, user, inode, program = line.split(' ', 9)
+
   next unless protocols.include?(protocol)
 
   local = local.split(':')
@@ -37,6 +38,9 @@ listening.lines.to_a[2..-1].each do |line|
   foreign_host = foreign[-2]
   foreign_port = foreign[-1]
   pid = program.split('/').first
+
+  command = getcommandline(pid)
+  next if command.nil?
 
   netstat['listening'] << {
     "protocol" => protocol,
