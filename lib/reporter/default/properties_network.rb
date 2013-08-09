@@ -54,6 +54,7 @@ report do
 
   property :network, {
     :@ip         => ips,
-    :@interfaces => interfaces.values
+    :@interfaces => interfaces.values,
+    :@sockets    => Facter.value('netstat')
   }
 end
