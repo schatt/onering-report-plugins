@@ -9,7 +9,7 @@ when 'debian' then flags += " -W"
 when 'redhat' then flags += " -T"
 end
 
-listening = Facter::Util::Resolution.exec("nice -n 19 netstat #{flags} -l | tr -s ' '")
+listening = Facter::Util::Resolution.exec("nice -n 19 netstat #{flags} -l | tr -s ' ' | sed 's/ LISTEN//g'")
 #nonlistening = Facter::Util::Resolution.exec("nice -n 19 netstat #{flags} | tr -s ' '")
 
 # netstat = {
@@ -27,7 +27,7 @@ def getcommandline(pid)
 end
 
 listening.lines.to_a[2..-1].each do |line|
-  protocol, recvq, sendq, local, foreign, state, user, inode, program = line.split(' ', 9)
+  protocol, recvq, sendq, local, foreign, user, inode, program = line.split(' ', 8)
 
   next unless protocols.include?(protocol)
 
