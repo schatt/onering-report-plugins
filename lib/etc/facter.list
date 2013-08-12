@@ -10,9 +10,10 @@ ipaddress:ip
 default_macaddress:mac
 default_gateway:gateway
 kernelrelease:kernel
-kernelarguments
+kernelarguments:@kernelarguments
 architecture:arch
 operatingsystem:distro
 operatingsystemrelease:version
 signature
 boottime:booted_at
+onering:@onering
