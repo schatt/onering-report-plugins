@@ -104,7 +104,7 @@ report do
   end
 
   unless stats_mem[:slots].nil?
-    stats_mem[:slots] = stats_mem[:slots].sort{|a,b| a[:id]<=>b[:id] }
+    stats_mem[:slots] = stats_mem[:slots].sort_by{|k,v| v[:id] unless v.nil? }
   end
 
 
