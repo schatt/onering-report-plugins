@@ -94,31 +94,70 @@ end
 
 # LLDP
 begin
+  require 'xmlsimple'
   current_iface = nil
   network_lldp = {}
 
-  output = Facter::Util::Resolution.exec('lldpctl')
+  output = Facter::Util::Resolution.exec('lldpctl -f xml')
 
-  if output
-    output.gsub(/^\s+/,'').lines do |line|
-      key, value = line.strip.chomp.squeeze(' ').split(/:\s+/, 2)
+  if not output.nil?
+  # XML formatting worked, parse as such
+    if output[0..1] == '<?'
+      output = XmlSimple.xml_in(output)
 
-      if key and value
-        key.gsub!(/ID$/, '_id')
-        key.gsub!(/[\-\s]+/, '_')
-        key.gsub!(/([a-z])([A-Z])/, '\1_\2')
-        key = key.downcase.strip.to_sym
-        value.strip!
-        kvs = _format(key,value)
+      (output['interface'] || []).each do |i|
+        current_iface = i['name']
+        port = i['port'].first
+        vlan = i['vlan']
+        chassis = i['chassis'].first
+        speed, duplex = port['auto-negotiation'].first['current'].first['content'].split(' - ',2).first.split(/BaseT/i,2)
 
-        kvs.each do |k, v|
-          next unless k and v
+        speed = (Integer(speed) * 1000000 rescue nil) # convert to bits
+        duplex = case duplex
+        when 'FD' then :full
+        when 'HD' then :half
+        else nil
+        end
 
-          if k == :interface
-            current_iface = v.split(',').first.to_sym
-          else
-            network_lldp[current_iface] = {} unless network_lldp[current_iface]
-            network_lldp[current_iface][k] = v
+      # port settings
+        network_lldp[current_iface]                  = Hash[_format(:port_descr, port['descr'].first['content'])]
+
+        network_lldp[current_iface]['port_mac']      = (port['id'].first['content'] rescue nil)
+        network_lldp[current_iface]['mfs']           = (port['mfs'].first['content'].to_i rescue nil)
+        network_lldp[current_iface]['speed']         = speed
+        network_lldp[current_iface]['duplex']        = duplex
+
+      # switch settings
+        network_lldp[current_iface]['switch']        = (chassis['name'].first['content'] rescue nil)
+        network_lldp[current_iface]['management_ip'] = (chassis['mgmt-ip'].first['content'] rescue nil)
+        network_lldp[current_iface]['chassis_mac']   = (chassis['id'].first['content'] rescue nil)
+
+      # Layer 2 / VLAN details
+        network_lldp[current_iface]['vlan']          = (Integer(vlan.select{|i| i['pvid'] == 'yes' }.first['vlan-id']) rescue nil)
+        network_lldp[current_iface]['tagged_vlans']  = (vlan.select{|i| i['pvid'] != 'yes' }.collect{|i| Integer(i['vlan-id']) } rescue nil)
+      end
+
+    else
+      output.gsub(/^\s+/,'').lines do |line|
+        key, value = line.strip.chomp.squeeze(' ').split(/:\s+/, 2)
+
+        if key and value
+          key.gsub!(/ID$/, '_id')
+          key.gsub!(/[\-\s]+/, '_')
+          key.gsub!(/([a-z])([A-Z])/, '\1_\2')
+          key = key.downcase.strip.to_sym
+          value.strip!
+          kvs = _format(key,value)
+
+          kvs.each do |k, v|
+            next unless k and v
+
+            if k == :interface
+              current_iface = v.split(',').first.to_sym
+            else
+              network_lldp[current_iface] = {} unless network_lldp[current_iface]
+              network_lldp[current_iface][k] = v
+            end
           end
         end
       end
@@ -127,6 +166,8 @@ begin
 
   network_lldp.each do |iface, lldp|
     lldp.each do |key, value|
+      next if value.respond_to?(:empty?) and value.empty?
+
       Facter.add("lldp_#{key}_#{iface}") do
         setcode { value }
       end
@@ -170,4 +211,8 @@ begin
 
 rescue Exception => e
   STDERR.puts "#{e.name}: #{e.message}"
+
+  e.backtrace.each do |b|
+    STDERR.puts b
+  end
 end
