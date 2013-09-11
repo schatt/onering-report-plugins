@@ -25,13 +25,14 @@ report do
 
   # LLDP autodiscovery
     switch = {
-      :name        => Facter.value("lldp_switch_#{iface}"),
-      :port        => Facter.value("lldp_port_#{iface}"),
-      :port_name   => Facter.value("lldp_port_name_#{iface}"),
-      :port_mac    => Facter.value("lldp_port_mac_#{iface}"),
-      :ip          => Facter.value("lldp_management_ip_#{iface}"),
-      :chassis_mac => Facter.value("lldp_chassis_mac_#{iface}"),
-      :mfs         => Facter.value("lldp_mfs_#{iface}")
+      :name         => Facter.value("lldp_switch_#{iface}"),
+      :port         => Facter.value("lldp_port_#{iface}"),
+      :port_name    => Facter.value("lldp_port_name_#{iface}"),
+      :port_mac     => Facter.value("lldp_port_mac_#{iface}"),
+      :ip           => Facter.value("lldp_management_ip_#{iface}"),
+      :chassis_mac  => Facter.value("lldp_chassis_mac_#{iface}"),
+      :vlan         => Facter.value("lldp_vlan_#{iface}"),
+      :tagged_vlans => Facter.value("lldp_tagged_vlans_#{iface}")
     }.reject{|k,v| v === nil }
 
 
