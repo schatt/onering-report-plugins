@@ -19,7 +19,7 @@ report do
     addresses = [{
       :ip       => Facter.value("ipaddress_#{iface}"),
       :netmask  => Facter.value("netmask_#{iface}")
-    }.reject{|k,v| v === nil }]
+    }.reject{|k,v| v.nil? }]
 
     interfaces[iface][:addresses] = addresses unless addresses.empty? or addresses.reject{|i| i.empty? }.empty?
 
@@ -27,13 +27,15 @@ report do
     switch = {
       :name         => Facter.value("lldp_switch_#{iface}"),
       :port         => Facter.value("lldp_port_#{iface}"),
+      :speed        => Facter.value("lldp_speed_#{iface}"),
+      :duplex       => Facter.value("lldp_duplex_#{iface}"),
       :port_name    => Facter.value("lldp_port_name_#{iface}"),
       :port_mac     => Facter.value("lldp_port_mac_#{iface}"),
       :ip           => Facter.value("lldp_management_ip_#{iface}"),
       :chassis_mac  => Facter.value("lldp_chassis_mac_#{iface}"),
       :vlan         => Facter.value("lldp_vlan_#{iface}"),
       :tagged_vlans => Facter.value("lldp_tagged_vlans_#{iface}")
-    }.reject{|k,v| v === nil }
+    }.reject{|k,v| v.nil? }
 
 
   # Bonding configuration
@@ -45,7 +47,7 @@ report do
   # masters
     bond = {
       :arp_ip_target => Facter.value("bonding_arp_ip_target_#{iface}")
-    }.reject {|k,v| v === nil }
+    }.reject {|k,v| v.nil? }
 
 
   # conditionally add applicable subsections
