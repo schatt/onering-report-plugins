@@ -103,38 +103,42 @@ begin
   if not output.nil?
   # XML formatting worked, parse as such
     if output[0..1] == '<?'
-      output = XmlSimple.xml_in(output)
+      begin
+        output = XmlSimple.xml_in(output)
 
-      (output['interface'] || []).each do |i|
-        current_iface = i['name']
-        port = i['port'].first
-        vlan = i['vlan']
-        chassis = i['chassis'].first
-        speed, duplex = port['auto-negotiation'].first['current'].first['content'].split(' - ',2).first.split(/BaseT/i,2)
+        (output['interface'] || []).each do |i|
+          current_iface = i['name']
+          port = i['port'].first
+          vlan = i['vlan']
+          chassis = i['chassis'].first
+          speed, duplex = port['auto-negotiation'].first['current'].first['content'].split(' - ',2).first.split(/BaseT/i,2)
 
-        speed = (Integer(speed) * 1000000 rescue nil) # convert to bits
-        duplex = case duplex
-        when 'FD' then :full
-        when 'HD' then :half
-        else nil
+          speed = (Integer(speed) * 1000000 rescue nil) # convert to bits
+          duplex = case duplex
+          when 'FD' then :full
+          when 'HD' then :half
+          else nil
+          end
+
+        # port settings
+          network_lldp[current_iface]                  = Hash[_format(:port_descr, port['descr'].first['content'])]
+
+          network_lldp[current_iface]['port_mac']      = (port['id'].first['content'] rescue nil)
+          network_lldp[current_iface]['mfs']           = (port['mfs'].first['content'].to_i rescue nil)
+          network_lldp[current_iface]['speed']         = speed
+          network_lldp[current_iface]['duplex']        = duplex
+
+        # switch settings
+          network_lldp[current_iface]['switch']        = (chassis['name'].first['content'] rescue nil)
+          network_lldp[current_iface]['management_ip'] = (chassis['mgmt-ip'].first['content'] rescue nil)
+          network_lldp[current_iface]['chassis_mac']   = (chassis['id'].first['content'] rescue nil)
+
+        # Layer 2 / VLAN details
+          network_lldp[current_iface]['vlan']          = (Integer(vlan.select{|i| i['pvid'] == 'yes' }.first['vlan-id']) rescue nil)
+          network_lldp[current_iface]['tagged_vlans']  = (vlan.select{|i| i['pvid'] != 'yes' }.collect{|i| Integer(i['vlan-id']) } rescue nil)
         end
-
-      # port settings
-        network_lldp[current_iface]                  = Hash[_format(:port_descr, port['descr'].first['content'])]
-
-        network_lldp[current_iface]['port_mac']      = (port['id'].first['content'] rescue nil)
-        network_lldp[current_iface]['mfs']           = (port['mfs'].first['content'].to_i rescue nil)
-        network_lldp[current_iface]['speed']         = speed
-        network_lldp[current_iface]['duplex']        = duplex
-
-      # switch settings
-        network_lldp[current_iface]['switch']        = (chassis['name'].first['content'] rescue nil)
-        network_lldp[current_iface]['management_ip'] = (chassis['mgmt-ip'].first['content'] rescue nil)
-        network_lldp[current_iface]['chassis_mac']   = (chassis['id'].first['content'] rescue nil)
-
-      # Layer 2 / VLAN details
-        network_lldp[current_iface]['vlan']          = (Integer(vlan.select{|i| i['pvid'] == 'yes' }.first['vlan-id']) rescue nil)
-        network_lldp[current_iface]['tagged_vlans']  = (vlan.select{|i| i['pvid'] != 'yes' }.collect{|i| Integer(i['vlan-id']) } rescue nil)
+      rescue
+        nil
       end
 
     else
