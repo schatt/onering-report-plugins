@@ -11,6 +11,8 @@ report do
   Facter.value('blockdevices').split(/\W+/).each do |dev|
 
     block = {
+      :name   => dev,
+      :device => (File.exists?("/dev/#{dev}") ? "/dev/#{dev}" : nil),
       :vendor => Facter.value("blockdevice_#{dev}_vendor"),
       :model  => Facter.value("blockdevice_#{dev}_model"),
       :size   => (Integer(Facter.value("blockdevice_#{dev}_size")) rescue nil)
