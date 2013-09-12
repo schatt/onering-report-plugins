@@ -104,7 +104,11 @@ report do
   end
 
   unless stats_mem[:slots].nil?
-    stats_mem[:slots] = stats_mem[:slots].sort_by{|k,v| v[:id] unless v.nil? }
+    begin
+      stats_mem[:slots] = stats_mem[:slots].sort_by{|k,v| v[:id] unless v.nil? }
+    rescue
+      nil
+    end
   end
 
 
