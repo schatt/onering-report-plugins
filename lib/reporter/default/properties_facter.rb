@@ -38,8 +38,8 @@ report do
           val = cleanup_dirty_values(key, Facter.value(line.first))
 
           property key.to_sym, val
-        rescue Exception
-          STDERR.puts e.message
+        rescue Exception => e
+          Onering::Logger.debug(e.message, "onering-report-plugins/properties_facter/#{e.class.name}")
           next
         end
       end
