@@ -8,23 +8,23 @@ report do
 
     block = {
       :name   => dev,
-      :device => (File.exists?("/dev/#{dev}") ? "/dev/#{dev}" : nil),
-      :vendor => Facter.value("blockdevice_#{dev}_vendor"),
-      :model  => Facter.value("blockdevice_#{dev}_model"),
-      :size   => (Integer(Facter.value("blockdevice_#{dev}_size")) rescue nil)
+      :device => (File.exists?("/dev/#{dev}") ? "/dev/#{dev}" : nil)
     }
 
     if File.directory?("/sys/block/#{dev}")
-      block[:removable]  = (File.read("/sys/block/#{dev}/removable").to_s.chomp.strip == '1' rescue nil)
-      block[:readonly]   = (File.read("/sys/block/#{dev}/ro").to_s.chomp.strip == '1' rescue nil)
-      block[:solidstate] = (File.read("/sys/block/#{dev}/queue/rotational").to_s.chomp.strip == '0' rescue nil)
+      block[:vendor]     = (%x{cat /sys/block/#{dev}/device/vendor 2> /dev/null}.to_s.strip.chomp rescue nil)
+      block[:model]      = (%x{cat /sys/block/#{dev}/device/model 2> /dev/null}.to_s.strip.chomp rescue nil)
+      block[:size]       = ((Integer(%x{cat /sys/block/#{dev}/size 2> /dev/null}.to_s.strip.chomp) * 512) rescue nil)
+      block[:removable]  = (%x{cat /sys/block/#{dev}/removable 2> /dev/null}.to_s.chomp.strip == '1' rescue nil)
+      block[:readonly]   = (%x{cat /sys/block/#{dev}/ro 2> /dev/null}.to_s.chomp.strip == '1' rescue nil)
+      block[:solidstate] = (%x{cat /sys/block/#{dev}/queue/rotational 2> /dev/null}.to_s.chomp.strip == '0' rescue nil)
       block[:sectorsize] = {}
 
       %w{
         logical
         physical
       }.each do |s|
-        block[:sectorsize][s.to_sym] = (Integer(File.read("/sys/block/#{dev}/queue/#{s}_block_size").chomp.strip) rescue nil)
+        block[:sectorsize][s.to_sym] = (Integer(%x{cat /sys/block/#{dev}/queue/#{s}_block_size 2> /dev/null}.chomp.strip) rescue nil)
       end
     end
 
