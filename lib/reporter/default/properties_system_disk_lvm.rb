@@ -66,7 +66,7 @@ report do
 
   lvm = {}
   lvm = {
-    :@groups => vg.values
+    :groups => vg.values
   } unless vg.values.empty?
 
   stat 'disk.@lvm', lvm unless lvm.empty?
