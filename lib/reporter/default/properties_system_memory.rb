@@ -27,7 +27,7 @@ report do
       next
     when /^Memory Device$/
       mode = :dimm
-      stats_mem[:slots] ||= []
+      stats_mem[:@slots] ||= []
       slot = {}
       next
 
@@ -94,14 +94,14 @@ report do
           }
         end
 
-        stats_mem[:slots] << slot.compact
+        stats_mem[:@slots] << slot.compact
       end
     end
   end
 
-  unless stats_mem[:slots].nil?
+  unless stats_mem[:@slots].nil?
     begin
-      stats_mem[:slots] = stats_mem[:slots].sort_by{|k,v| v[:id] unless v.nil? }
+      stats_mem[:@slots] = stats_mem[:@slots].sort_by{|k,v| v[:id] unless v.nil? }
     rescue
       nil
     end

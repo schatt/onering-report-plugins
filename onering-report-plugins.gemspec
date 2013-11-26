@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = "onering-report-plugins"
-  s.version     = "0.0.57"
+  s.version     = "0.0.58"
   s.date        = "2013-04-09"
   s.summary     = "Onering system reporting plugins"
   s.description = "Base plugins for providing system information via the Onering client utility"
