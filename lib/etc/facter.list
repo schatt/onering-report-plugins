@@ -6,7 +6,7 @@ boardproductname:mbmodel
 boardserialnumber:mbserial
 hostname
 fqdn
-ipaddress:ip
+default_ipaddress:ip
 default_macaddress:mac
 default_gateway:gateway
 kernelrelease:kernel

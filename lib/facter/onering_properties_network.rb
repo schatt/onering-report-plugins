@@ -67,11 +67,25 @@ Facter.add('network_interfaces') do
   end
 end
 
-default_if = Facter::Util::Resolution.exec('route -n | grep "^0.0.0.0" | tr -s " " | cut -d " " -f8')
+default_if = Facter::Util::Resolution.exec('ip route | grep "^default" | tr -s " " | cut -d " " -f5')
+
+# attempt to use 'route -n' if 'ip route' failed somehow
+if default_if.nil? or not Facter.value('interfaces').to_s.split(',').include?(default_if)
+  STDERR.puts("Falling back to 'route -n' for default interface detection")
+  default_if = Facter::Util::Resolution.exec('route -n | grep "^0.0.0.0" | tr -s " " | cut -d " " -f8')
+end
 
 Facter.add('default_gateway') do
   setcode do
-    Facter::Util::Resolution.exec('route -n | grep "UG" | tr -s " " | cut -d" " -f2')
+    default_gw = Facter::Util::Resolution.exec('ip route | grep "^default" | tr -s " " | cut -d " " -f3')
+
+  # 'ip route' default gateway looks like an IP address, cool!
+    if default_gw.to_s =~ /[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/
+      default_gw
+    else
+      STDERR.puts("Falling back to 'route -n' for default gateway detection")
+      Facter::Util::Resolution.exec('route -n | grep "UG" | tr -s " " | cut -d" " -f2')
+    end
   end
 end
 
@@ -87,8 +101,22 @@ if default_if
     Facter.add('default_macaddress') do
       setcode { Facter.value("macaddress_#{default_if}") }
     end
+
+    Facter.add('default_ipaddress') do
+      setcode { Facter.value("ipaddress_#{default_if}") }
+    end
   rescue
     nil
+  end
+else
+# no default interface could be determined, fallback to sane defaults
+#-
+  Facter.add('default_macaddress') do
+    setcode { Facter.value("macaddress") }
+  end
+
+  Facter.add('default_ipaddress') do
+    setcode { Facter.value("ipaddress") }
   end
 end
 
