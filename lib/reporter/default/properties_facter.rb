@@ -24,7 +24,10 @@ report do
       IO.readlines(file) if File.exists?(file)
     }.flatten.compact.sort.uniq
 
+
     facts.each do |line|
+      Onering::Logger.debug3("-> Facter Line: #{line.inspect}", "Onering::Reporter")
+
     # strip whitespace/kill newline
       line.strip!
       line.chomp!
@@ -37,7 +40,7 @@ report do
           key = (line.length == 1 ? line.first : line.last)
           val = cleanup_dirty_values(key, Facter.value(line.first))
 
-          property key.to_sym, val
+          property(key.to_sym, val)
         rescue Exception => e
           Onering::Logger.debug(e.message, "onering-report-plugins/properties_facter/#{e.class.name}")
           next
