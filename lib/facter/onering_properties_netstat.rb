@@ -26,7 +26,7 @@ def getcommandline(pid)
   (File.read("/proc/#{pid}/cmdline").to_s.strip.chomp.squeeze("\u0000").squeeze("\0").gsub("\u0000", ' ').gsub("\0", ' '))
 end
 
-listening.to_s.lines.to_a[2..-1].each do |line|
+[*listening.to_s.lines.to_a[2..-1]].each do |line|
   protocol, recvq, sendq, local, foreign, user, inode, program = line.split(' ', 8)
 
   next unless protocols.include?(protocol)
