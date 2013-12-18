@@ -22,7 +22,7 @@ report do
       "/etc/onering/facter.list"
     ].collect{|file|
       IO.readlines(file) if File.exists?(file)
-    }.flatten.compact.sort.uniq
+    }.flatten.compact.uniq
 
 
     facts.each do |line|
