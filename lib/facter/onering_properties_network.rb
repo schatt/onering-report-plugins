@@ -135,6 +135,9 @@ begin
         output = XmlSimple.xml_in(output)
 
         (output['interface'] || []).each do |i|
+        # only accept devices that advertise themselves as a router
+          next unless i['chassis'].first['capability'].select{|j| j['type'] == 'Router' }.first['enabled'] == 'on'
+
           current_iface = i['name']
           port = i['port'].first
           vlan = i['vlan']
