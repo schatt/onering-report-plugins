@@ -51,8 +51,8 @@ report do
                 break
               end
             end
-          rescue Exception
-            STDERR.puts e.message
+          rescue Exception => e
+            Onering::Logger.warn("Error occurred gathering Ohai facts: #{e.class.name} - #{e.message}", "onering-report-plugins/properties_ohai")
             next
           end
         end

@@ -4,7 +4,7 @@ report do
 #
   blocks = []
 
-  Facter.value('blockdevices').split(/\W+/).each do |dev|
+  Facter.value('blockdevices').to_s.split(/\W+/).each do |dev|
 
     block = {
       :name   => dev,
@@ -31,5 +31,5 @@ report do
     blocks << block.compact
   end
 
-  stat 'disk.@block', blocks unless blocks.empty?
+  stat 'disk.@block', blocks
 end
